@@ -14,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import ch.qos.logback.classic.spi.STEUtil;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import springs.dto.Routes;
@@ -32,7 +31,7 @@ public class RoutesService {
 
     public Page<Routes> getRoutesDataService(int page, int size, String search) {
         try {
-            String searchValue = search.equals("null") ? null : search;
+            String searchValue = search.equals("null") || search.equals("") ? null : search;
             Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
             return dao.findByRoutes(searchValue, pageable);
         } catch (Exception e) {

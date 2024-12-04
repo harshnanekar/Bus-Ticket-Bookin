@@ -58,3 +58,10 @@ document.addEventListener("click", function (event) {
   });
 });
 
+function showLoader(value) {
+  if (value) {
+    document.querySelector(".loader").classList.remove("hidden");
+  } else {
+    document.querySelector(".loader").classList.add("hidden");
+  }
+}

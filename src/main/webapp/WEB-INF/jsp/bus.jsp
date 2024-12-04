@@ -2,15 +2,15 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en">
   <jsp:include page="head.jsp" />
-  <title>View Routes</title>
+  <title>Bus</title>
   <body>
     <jsp:include page="admin-header.jsp" />
     <jsp:include page="admin-sidebar.jsp" />
 
     <main>
-       <div class="mt-[10rem] md:mt-[10rem]">
+      <div class="mt-[10rem] md:mt-[10rem]">
         <div class="flex justify-end pr-4">
-          <button class="btn flex items-center gap-2" id="add-bus-type">
+          <button class="btn flex items-center gap-2" id="add-bus">
             <svg
               width="24"
               height="24"
@@ -43,9 +43,7 @@
               <div
                 class="flex justify-between items-center px-4 py-3 bg-blue-50 rounded-t-lg"
               >
-                <h2 class="text-lg font-semibold text-gray-700">
-                  Bus Table
-                </h2>
+                <h2 class="text-lg font-semibold text-gray-700">Bus Table</h2>
               </div>
 
               <div class="p-4 bg-white">
@@ -91,6 +89,7 @@
   <script src="/js/validations/validation.js"></script>
 
   <script>
+    let busTypes = [];
     function renderTable(data) {
       let tbodyElement = document.getElementById("pagination-data");
       tbodyElement.innerHTML = "";
@@ -102,7 +101,7 @@
         data.content.length > 0
       ) {
         data.content.forEach((item, index) => {
-          console.log("data ",JSON.stringify(item));
+          console.log("data ", JSON.stringify(item));
 
           let row = document.createElement("tr");
           row.setAttribute("data-bus-id", item.id);
@@ -148,7 +147,7 @@
       } else {
         let row = document.createElement("tr");
         let cell = document.createElement("td");
-        cell.setAttribute("colspan", "2");
+        cell.setAttribute("colspan", "4");
         cell.textContent = "No Data Found !";
         row.appendChild(cell);
         tbodyElement.appendChild(row);
@@ -162,7 +161,136 @@
       const search = null;
       let data = await addPagination(url, page, size, search);
       renderTable(data);
+
+      getBusTypes();
     });
 
+    document.getElementById("add-bus").addEventListener("click", () => {
+      location.href = "/add-bus";
+    });
+
+    document.addEventListener("click", async (event) => {
+      if (event.target.closest(".update-btn")) {
+        const tableRow = event.target.closest("tr");
+        let id = tableRow.getAttribute("data-bus-id");
+
+        const url = "/fetch-bus/" + id;
+        const method = "GET";
+
+        const { error, data } = await fetchApi(url, method, null);
+
+        if (error) {
+          showAlert({ alert: "error", title: error.message });
+        }
+
+        if (data) {
+          document.querySelector(".update-modal").classList.remove("hidden");
+          let htmlContent = '<div class="w-full py-2 space-y-8">';
+
+          htmlContent +=
+            "<div class='lms-input-container'> " +
+            "<input id='bus-update' class='lms-input' type='text' placeholder='' value='" +
+            data.bus_name +
+            "'>";
+          htmlContent += `<label for="bus-type-update" class="lms-placeholder">
+                            Enter Bus Name<span class="text-danger">*</span>
+                          </label>
+                        </div>
+                        <div class="lms-input-container">
+                          <select id="bus-type-update" class="lms-dropdropdown">
+                          </select>
+                          <div class="lms-cut-dropdown"></div>
+                          <label for="parent-entity" class="lms-placeholder-dropdown">
+                            Bus Types<span>*</span>
+                          </label>
+                        </div></div>`;
+
+          document.querySelector(".update-modal-title").innerText = "Bus";
+          document.getElementById("modal-content-update").innerHTML =
+            htmlContent;
+
+          let options = `<option value="">Select Bus Type</option>`;
+          for (const element of busTypes) {
+            options +=
+              "<option value=" +
+              element.id +
+              ">" +
+              element.busType +
+              "</option>";
+          }
+
+          const selectDropdown = document.getElementById("bus-type-update");
+          selectDropdown.innerHTML = options;
+
+          Array.from(selectDropdown).forEach((option) => {
+            if (option.value == data.bus_type_id) {
+              option.selected = true;
+            }
+          });
+
+          document
+            .getElementById("update-submit-btn")
+            .setAttribute("data-bus-id", data.id);
+        }
+      }
+    });
+
+    document
+      .getElementById("update-submit-btn")
+      .addEventListener("click", async () => {
+        const id = document
+          .getElementById("update-submit-btn")
+          .getAttribute("data-bus-id");
+        const bus_name = document.getElementById("bus-update").value;
+        const bus_type_id = document.getElementById("bus-type-update").value;
+
+        const busNameVal = isRequired(bus_name);
+        const busTypeVal = isRequired(bus_type_id);
+
+        console.log("bus and type val ",busNameVal,busTypeVal);
+
+        if (!busNameVal) {
+          showAlert({ alert: "error", title: "Bus Name Is Required" });
+          return;
+        }
+
+        if (!busTypeVal) {
+          showAlert({ alert: "error", title: "Bus Type Is Required" });
+          return;
+        }
+
+        const url = "/update-bus";
+        const method = "POST";
+        const obj = {id, bus_name, bus_type_id};
+
+        const { error, data } = await fetchApi(url, method, obj);
+
+        if (error) {
+          showAlert({ alert: "error", title: error.message });
+        }
+
+        if (data) {
+        }
+      });
+
+    async function getBusTypes() {
+      const url = "/fetch-bus-types";
+      const method = "GET";
+      const { error, data } = await fetchApi(url, method, null);
+
+      if (error) {
+        showAlert({ alert: "error", title: error.message });
+      }
+
+      if (data) {
+        busTypes = data.map((dt) => {
+          return {
+            id: dt.id,
+            busType: dt.bus_type,
+          };
+        });
+        console.log("bus types data ", JSON.stringify(busTypes));
+      }
+    }
   </script>
 </html>

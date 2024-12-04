@@ -141,7 +141,7 @@
       } else {
         let row = document.createElement("tr");
         let cell = document.createElement("td");
-        cell.setAttribute("colspan", "2");
+        cell.setAttribute("colspan", "3");
         cell.textContent = "No Data Found !";
         row.appendChild(cell);
         tbodyElement.appendChild(row);

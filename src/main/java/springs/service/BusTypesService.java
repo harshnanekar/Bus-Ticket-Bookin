@@ -2,8 +2,10 @@ package springs.service;
 
 import org.springframework.data.domain.Pageable;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -14,6 +16,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import jakarta.servlet.http.HttpSession;
 import jakarta.transaction.Transactional;
 import springs.dto.BusTypes;
@@ -29,9 +36,12 @@ public class BusTypesService {
     @Autowired
     private HttpSession session;
 
+    @Autowired
+    private EntityManager entity;
+
     public Page<BusTypes> fetchBusTypesService(int page, int size, String search) {
         try {
-            String searchValue = search.equals("null") ? null : search;
+            String searchValue = search.equals("null") || search.equals("") ? null : search;
             Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
             return dao.fetchBusTypesDao(pageable, searchValue);
         } catch (Exception e) {
@@ -107,6 +117,17 @@ public class BusTypesService {
             return responseJson;
         } catch (Exception e) {
             throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Error In Updating Bus Type");
+        }
+    }
+
+    public List<BusTypes> fetchAllBusTypes() {
+        try {
+            List<BusTypes> busTypes = dao.findAllByActive();
+            return busTypes;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Bus Type Not Found");
         }
     }
 

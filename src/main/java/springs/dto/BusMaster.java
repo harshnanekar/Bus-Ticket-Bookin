@@ -1,9 +1,12 @@
 package springs.dto;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Data;
@@ -20,11 +24,6 @@ import lombok.Data;
 @Data
 public class BusMaster {
 
-    public BusMaster(int id2, String busName, String busTypeName) {
-        this.id = id2;
-        this.bus_name = busName;
-        this.bus_type = busTypeName;
-    }
 
     @Id
     @Column
@@ -38,6 +37,15 @@ public class BusMaster {
     @JoinColumn(name = "bus_type_lid")
     @JsonIgnore
     private BusTypes bus_type_lid;
+
+    @Column
+    private int capacity;
+
+    @Column
+    private int seats_per_row;
+
+    @Column
+    private int total_rows;
 
     @Column
     private String created_by;
@@ -56,5 +64,11 @@ public class BusMaster {
 
     @Transient
     private String bus_type;
+
+    @Transient
+    private int bus_type_id;
+
+    @OneToMany(mappedBy = "bus_lid", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Seats> bus_lid = new ArrayList<>();
 
 }

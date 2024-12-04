@@ -85,4 +85,10 @@ public class BusTypesCtrl {
         return ResponseEntity.status(HttpStatus.OK).body(json);
     }
 
+    @GetMapping("/fetch-bus-types")
+    @ResponseBody
+    public List<BusTypes> fetchBusTypes() {
+        List<BusTypes> busTypes = service.fetchAllBusTypes();
+        return busTypes;
+    }
 }

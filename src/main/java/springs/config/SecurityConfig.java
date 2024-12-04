@@ -65,7 +65,7 @@ public class SecurityConfig {
                 .authorizeRequests(auth ->
                         auth.requestMatchers("/loginPage","/login-success","/login-failed","/dashboard",
                         "/admin-dashboard","/user-dashboard","/routes","/WEB-INF/jsp/**","/resource/images/**","/css/**","/js/**",
-                        "/test","/add-route","/bus-types","/add-bus-type","/bus").permitAll()  
+                        "/test","/add-route","/bus-types","/add-bus-type","/bus","/add-bus").permitAll()  
                                 .anyRequest().authenticated()).  
                                 formLogin(login -> {
                                         try {

@@ -27,6 +27,7 @@
     </div>
 
     <jsp:include page="alert.jsp" ></jsp:include>
+    <jsp:include page="loader.jsp" ></jsp:include>
 
   </main>
 
@@ -39,6 +40,7 @@
     document.getElementById('submit-bus-type').addEventListener('click',async () => {
       const bus_type = document.getElementById('bus-type').value.trim();
       const checkRequired = isRequired(bus_type);
+      showLoader(true);
      
       if(!checkRequired) { 
         showAlert({alert:"error",title: "Bus Type Is Required" });
