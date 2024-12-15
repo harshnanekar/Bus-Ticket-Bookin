@@ -1,6 +1,7 @@
 package springs.service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,9 @@ public class BusMasterService {
     @Autowired
     private BusMasterDao dao;
 
+    @Autowired
+    private BusTypesDao busTypeDao;
+
     public Page<BusMaster> fetchBusMastersService(int page, int size, String search) {
         try {
             String searchValue = search.equals("null") || search.equals("") ? null : search;
@@ -65,7 +69,10 @@ public class BusMasterService {
                     cr.equal(join.get("active"), true)));
 
             if (searchValue != null) {
-                predicates.add(cr.like(root.get("bus_name"), "%" + searchValue + "%"));
+                predicates.add(
+                        cr.or(
+                                cr.like(root.get("bus_name"), "%" + searchValue + "%"),
+                                cr.like(join.get("bus_type"), "%" + searchValue + "%")));
             }
 
             criteriaQuery.where(predicates.toArray(new Predicate[0]));
@@ -95,7 +102,7 @@ public class BusMasterService {
             return new PageImpl<>(dtoList, pageable, resultList.size());
         } catch (Exception e) {
             e.printStackTrace();
-            throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Buses Not Found");
+            throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Error In Getting Buses");
         }
     }
 
@@ -115,6 +122,10 @@ public class BusMasterService {
             List<Seats> seats = new ArrayList<>();
 
             for (int i = bus.getTotal_rows(); i >= 1; i--) {
+
+                if(seatMiddleCount == i && !bus.getLast_row()){
+                    continue;
+                } 
 
                 if (seatMiddleCount == i) {
                     Seats seatObj = new Seats();
@@ -158,6 +169,7 @@ public class BusMasterService {
                 }
             }
 
+            System.out.println("bus seats " + seats.toString());
             int[] seatInsert = busDao.createBusSeats(seats);
             if (seatInsert.length == 0) {
                 throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Error In Creating Bus Seats");
@@ -186,18 +198,71 @@ public class BusMasterService {
 
             BusMaster bus = dao.findById(id)
                     .orElseThrow(() -> new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Bus Not Found"));
-    
-            BusMaster busObj  = new BusMaster();
+
+            BusMaster busObj = new BusMaster();
             busObj.setId(bus.getId());
             busObj.setBus_name(bus.getBus_name());
             busObj.setBus_type_id(bus.getBus_type_lid().getId());
+            busObj.setBus_type(bus.getBus_type_lid().getBus_type());
+            busObj.setCapacity(bus.getCapacity());
+            busObj.setTotal_rows(bus.getTotal_rows());
+            busObj.setSeats_per_row(bus.getSeats_per_row());
             return busObj;
 
         } catch (Exception e) {
-            throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Bus Not Found");
+            throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Error In Getting Bus");
         }
     }
 
-   
+    public Map<String, String> updateBusService(BusMaster bus) {
+        try {
+            String updatedBy = (String) session.getAttribute("username");
+
+            BusTypes busType = busTypeDao.findById(bus.getBus_type_id())
+                    .orElseThrow(() -> new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Bus Type Not Found"));
+
+            BusMaster busDto = dao.findById(bus.getId())
+                    .orElseThrow(() -> new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Bus Not Found"));
+            busDto.setBus_name(bus.getBus_name());
+            busDto.setBus_type_lid(busType);
+            busDto.setModified_by(updatedBy);
+            busDto.setModified_date(new Date());
+            dao.save(busDto);
+
+            Map<String, String> responseJson = new HashMap<>();
+            responseJson.put("message", "Bus Updated Successfully");
+            return responseJson;
+        } catch (Exception e) {
+            throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Error In Updating Bus");
+        }
+    }
+
+    public Map<String, String> deleteBusService(int id) {
+        try {
+            String updatedBy = (String) session.getAttribute("username");
+            BusMaster bus = dao.findById(id)
+                    .orElseThrow(() -> new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Bus Not Found"));
+            bus.setActive(false);
+            bus.setModified_by(updatedBy);
+            bus.setModified_date(new Date());
+            dao.save(bus);
+
+            Map<String, String> responseJson = new HashMap<>();
+            responseJson.put("message", "Bus Deleted Successfully");
+            return responseJson;
+
+        } catch (Exception e) {
+            throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Error In Deleting Bus");
+        }
+    }
+
+    public List<BusMaster> fetchAllBuses() {
+        try {
+           List <BusMaster> bus = dao.findAllByActive();
+           return bus;
+        } catch (Exception e) {
+           throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Buses Not Found");
+        }
+    }
 
 }

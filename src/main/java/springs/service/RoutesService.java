@@ -2,6 +2,7 @@ package springs.service;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -65,7 +66,7 @@ public class RoutesService {
         try {
             Routes routeDao = dao.findById(id)
                     .orElseThrow(() -> new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Route Not Found"));
-            routeDao.setActive(false);        
+            routeDao.setActive(false);
             routeDao.setModified_by(updatedBy);
             routeDao.setModified_date(new Date());
             dao.save(routeDao);
@@ -109,6 +110,15 @@ public class RoutesService {
             return responseJson;
         } catch (Exception e) {
             throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Error In Updating Route");
+        }
+    }
+
+    public List<Routes> fetchAllRoutes() {
+        try {
+            List<Routes> routes = dao.findALlByActive();
+            return routes;
+        } catch (Exception e) {
+            throw new DbExceptionHandler(HttpStatus.NOT_IMPLEMENTED, "Error In Getting Routes");
         }
     }
 

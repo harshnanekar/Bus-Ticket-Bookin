@@ -18,12 +18,13 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "bus_master")
 @Data
 public class BusMaster {
-
 
     @Id
     @Column
@@ -46,6 +47,13 @@ public class BusMaster {
 
     @Column
     private int total_rows;
+
+    @Column
+    private boolean last_row;
+
+    public boolean getLast_row() {
+        return last_row;
+    }
 
     @Column
     private String created_by;

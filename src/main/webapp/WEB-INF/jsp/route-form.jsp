@@ -52,6 +52,7 @@
 
        if(error) {
         showAlert({alert:"error",title: error.message});
+        return;
        }
        
        if(data) {

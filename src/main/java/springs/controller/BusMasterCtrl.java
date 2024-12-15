@@ -82,4 +82,26 @@ public class BusMasterCtrl {
         return bus;
     }
 
+    @PostMapping("/update-bus")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<Object> updateBusCtrl(@RequestBody BusMaster bus) {
+        Map<String, String> responseJson = service.updateBusService(bus);
+        return ResponseEntity.status(HttpStatus.OK).body(responseJson);
+    }
+
+    @GetMapping("/delete-bus/{id}")
+    @Secured("ROLE_ADMIN")
+    public ResponseEntity<Object> deleteBusCtrl(@PathVariable int id) {
+        Map<String, String> responseJson = service.deleteBusService(id);
+        return ResponseEntity.status(HttpStatus.OK).body(responseJson);
+    }
+
+    @GetMapping("/view-bus/{id}")
+    @Secured("ROLE_ADMIN")
+    public String viewBus(@PathVariable int id, Model m) {
+        BusMaster bus = service.fetchBusService(id);
+        m.addAttribute("bus", bus);
+        return "view-bus";
+    }
+
 }

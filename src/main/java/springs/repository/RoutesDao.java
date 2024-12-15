@@ -1,5 +1,7 @@
 package springs.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +16,9 @@ public interface RoutesDao extends JpaRepository<Routes,Integer>{
 
     @Query("SELECT r FROM Routes r WHERE (:search IS NULL OR r.route LIKE %:search%) AND r.active = TRUE")
     Page<Routes> findByRoutes(@Param("search") String search, Pageable pageable);
+
+    @Query("SELECT r FROM Routes r WHERE active = TRUE")
+    List<Routes> findALlByActive();
 
 }
 

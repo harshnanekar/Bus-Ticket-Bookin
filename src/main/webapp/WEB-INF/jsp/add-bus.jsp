@@ -49,6 +49,21 @@
            </div>
 
            <div class="mb-4 w-full sm:w-1/2 lg:w-1/4 px-2">
+            <p class="text-gray-500">Is Last Row Combined?<span class="text-red-500">*</span></p>
+            <div>
+              <label for="last-row-yes" class=""> 
+                  <input id="last-row-yes" class="accent-red-500" name="last-row" type="radio" value="yes">
+                  Yes
+              </label>&ensp;
+              <label for="last-row-no" class=""> 
+                  <input id="last-row-no" class="accent-red-500" name="last-row" type="radio" value="no">
+                  No
+              </label>
+          </div>
+          </div>
+            
+
+           <div class="mb-4 w-full sm:w-1/2 lg:w-1/4 px-2">
                 <div class="lms-input-container">
                     <input id="seats-row-column" class="lms-input" type="number" placeholder="" value="">
                     <label for="seats-row-column" class="lms-placeholder">Number Of Rows<span class="text-danger">*</span></label>
@@ -83,6 +98,9 @@
       const seats_per_row = document.getElementById("seats-in-row").value;
       const total_rows = document.getElementById("seats-row-column").value;
       const capacity = document.getElementById("capacity").value;
+      const is_last_row = document.querySelector('input[name="last-row"]:checked').value;
+      const last_row = is_last_row === 'yes' ? true : false;
+      console.log("last row ",last_row);
 
       const busRequired = isRequired(bus_name);
       const busTypeRequired = isRequired(bus_type_id);
@@ -117,11 +135,12 @@
 
        const url = "/submit-bus";
        const method = 'POST';
-       const obj = {bus_name,bus_type_id,seats_per_row,total_rows,capacity};
+       const obj = {bus_name,bus_type_id,seats_per_row,total_rows,capacity,last_row};
        const {error,data} = await fetchApi(url,method,obj);
 
        if(error) {
         showAlert({alert:"error",title: error.message});
+        return;
        }
        
        if(data) {
@@ -134,7 +153,11 @@
       document.getElementById("seats-row-column").addEventListener("input",() => {
          const seats_in_row = document.getElementById("seats-in-row").value;
          const seats_row_column = document.getElementById("seats-row-column").value;
+         const is_last_row = document.querySelector('input[name="last-row"]:checked').value;
+         const last_row = is_last_row === 'yes' ? true : false;
+         console.log("last row ",last_row);
 
+ 
          const seatsRequiredVal = isRequired(seats_in_row);
          const seatsNumberVal = isRequired(seats_in_row);
 
@@ -150,9 +173,14 @@
 
          const dropdown = document.getElementById('bus-type');
          const dropdownValue = dropdown.options[dropdown.selectedIndex].text.toUpperCase();
-         
-         let capacity = ((seats_in_row * seats_row_column) + 1) - seats_in_row;
-
+         let capacity;
+        
+         if(!last_row) {
+          capacity = (seats_in_row * seats_row_column) - seats_in_row;
+         }else{
+          capacity = ((seats_in_row * seats_row_column) + 1) - seats_in_row;
+         }
+        
          document.getElementById("capacity").value = capacity;
       });
   </script>

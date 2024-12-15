@@ -50,7 +50,7 @@
                 <jsp:include page="search.jsp" />
               </div>
 
-              <div class="responsive-table overflow-x-auto">
+              <div class="responsive-table">
                 <table class="min-w-full bg-white rounded-b-lg shadow">
                   <thead
                     id="route-headers"
@@ -123,23 +123,29 @@
           let cell4 = document.createElement("td");
           cell4.classList.add("relative");
           cell4.classList.add("font-bold");
-          cell4.innerHTML = `<button onclick="toggleDropdown(event)"
-                                              class="focus:outline-none text-gray-600 px-4"><i
-                                              class="fa-solid fa-ellipsis-vertical"></i></button>
+          let cell4Data =
+            '<button onclick="toggleDropdown(event)" class="focus:outline-none text-gray-600 px-4">' +
+            '<i class="fa-solid fa-ellipsis-vertical"></i>' +
+            "</button>" +
+            '<div id="dropdown-0" class="dropdown text-sm hidden absolute bottom-0 right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">' +
+            '<a href="/view-bus/' +
+            item.id +
+            '" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center view-btn">' +
+            '<i class="text-red-500 fa-solid fa-eye"></i>' +
+            '<span class="ml-2">View</span>' +
+            "</a>" +
+            '<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center update-btn">' +
+            '<i class="text-red-500 fa-solid fa-pen-to-square"></i>' +
+            '<span class="ml-2">Update</span>' +
+            "</a>" +
+            '<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center delete-btn">' +
+            '<i class="text-red-500 fa-solid fa-trash"></i>' +
+            '<span class="ml-2">Delete</span>' +
+            "</a>" +
+            "</div>";
 
-                            <div id="dropdown-0"
-                                class="dropdown text-sm hidden absolute bottom-0 right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                                <a href="#"
-                                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center update-btn">
-                                    <i class="text-red-500 fa-solid fa-pen-to-square"></i> <span
-                                        class="ml-2">Update</span>
-                                </a>
-                                <a href="#"
-                                    class="block px-4 py-2 text-gray-700 hover:bg-gray-100 flex items-center delete-btn">
-                                    <i class="text-red-500 fa-solid fa-trash-can"></i><span
-                                        class="ml-2">Delete</span>
-                                </a>
-                            </div>`;
+            
+          cell4.innerHTML = cell4Data;
           row.appendChild(cell4);
 
           tbodyElement.appendChild(row);
@@ -233,6 +239,22 @@
             .setAttribute("data-bus-id", data.id);
         }
       }
+
+      if (event.target.closest(".delete-btn")) {
+        const tableRow = event.target.closest("tr");
+        let id = tableRow.getAttribute("data-bus-id");
+
+        const htmlContent = ` <h3 class="text-base font-semibold text-gray-900" id="modal-title">Delete Bus</h3>
+                            <div class="mt-2">
+                              <p class="text-sm text-gray-500">Are you sure you want to delete bus ?</p>
+                            </div>`;
+
+        document.getElementById("modal-content-delete").innerHTML = htmlContent;
+        document
+          .getElementById("delete-submit-btn")
+          .setAttribute("data-bus-id", id);
+        document.querySelector(".delete-modal").classList.remove("hidden");
+      }
     });
 
     document
@@ -247,7 +269,7 @@
         const busNameVal = isRequired(bus_name);
         const busTypeVal = isRequired(bus_type_id);
 
-        console.log("bus and type val ",busNameVal,busTypeVal);
+        console.log("bus and type val ", busNameVal, busTypeVal);
 
         if (!busNameVal) {
           showAlert({ alert: "error", title: "Bus Name Is Required" });
@@ -261,15 +283,18 @@
 
         const url = "/update-bus";
         const method = "POST";
-        const obj = {id, bus_name, bus_type_id};
+        const obj = { id, bus_name, bus_type_id };
 
         const { error, data } = await fetchApi(url, method, obj);
 
         if (error) {
           showAlert({ alert: "error", title: error.message });
+          return;
         }
 
         if (data) {
+          showAlert({ alert: "success", title: data.message });
+          location.reload();
         }
       });
 
@@ -292,5 +317,25 @@
         console.log("bus types data ", JSON.stringify(busTypes));
       }
     }
+
+    document
+      .getElementById("delete-submit-btn")
+      .addEventListener("click", async (e) => {
+        const id = e.target.getAttribute("data-bus-id");
+
+        const url = "/delete-bus/" + id;
+        const method = "GET";
+
+        const { error, data } = await fetchApi(url, method, null);
+        if (error) {
+          showAlert({ alert: "error", title: error.message });
+          return;
+        }
+
+        if (data) {
+          showAlert({ alert: "error", title: data.message });
+          location.reload();
+        }
+      });
   </script>
 </html>

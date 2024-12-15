@@ -3,7 +3,6 @@ package springs.repository;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,8 +24,8 @@ public class BusDao {
 
         System.out.println("Bus Dao Called");
 
-        String sql = "INSERT INTO bus_master (bus_name,bus_type_lid,capacity,seats_per_row,total_rows,created_by) " +
-                " VALUES (?,?,?,?,?,?) RETURNING id";
+        String sql = "INSERT INTO bus_master (bus_name,bus_type_lid,capacity,seats_per_row,total_rows,last_row,created_by) " +
+                " VALUES (?,?,?,?,?,?,?) RETURNING id";
 
         return jdbcTemplate.query(sql, ps -> {
             ps.setString(1, bus.getBus_name());
@@ -34,7 +33,8 @@ public class BusDao {
             ps.setInt(3, bus.getCapacity());
             ps.setInt(4, bus.getSeats_per_row());
             ps.setInt(5, bus.getTotal_rows());
-            ps.setString(6, bus.getCreated_by());
+            ps.setBoolean(6, bus.getLast_row());
+            ps.setString(7, bus.getCreated_by());
         }, rs -> {
             if (rs.next()) {
                 return rs.getInt(1);
